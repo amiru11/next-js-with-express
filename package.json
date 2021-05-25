@@ -4,12 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "nodemon",
-    "build": "next build",
-    "start": "next"
+    "build": "next build && tsc --project tsconfig.server.json && next export",
+    "start": "next",
+    "export": "next build && next export"
   },
   "dependencies": {
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
+    "googleapis": "^74.0.0",
     "next": "10.2.2",
     "passport": "^0.4.1",
     "passport-google-oauth20": "^2.0.0",
