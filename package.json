@@ -9,6 +9,7 @@
     "export": "next build && next export"
   },
   "dependencies": {
+    "axios": "^0.21.1",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "googleapis": "^74.0.0",

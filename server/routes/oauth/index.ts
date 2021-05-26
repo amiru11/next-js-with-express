@@ -1,20 +1,27 @@
 import { Router } from 'express';
 import { redirectUri, generateSnsLoginLink } from '../../lib';
-import { getAccessToken, getProfile } from '../../lib/google';
+import * as google from '../../lib/google';
+import * as facebook from '../../lib/facebook';
 
-const { FACEBOOK_ID, GOOGLE_ID, GOOGLE_SECRET, PROD_HOST } = process.env;
+const {
+  GOOGLE_ID,
+  GOOGLE_SECRET,
+  FACEBOOK_ID,
+  FACEBOOK_SECRET,
+  PROD_HOST
+} = process.env;
 
 const oAuth = Router();
 
 /**
  * oAuth Router
  * /start/:provider
- * /done
+ * /done/:provider
  */
  const socialRedirect = async (req, res) => {
   const { provider } = req.params;
   const { next } = req.query;
-  const validated = ['facebook', 'google', 'github'].includes(provider);
+  const validated = ['facebook', 'google', 'twitter', 'apple'].includes(provider);
   if (!validated) {
     res.status = 400;
     return;
@@ -27,22 +34,51 @@ const oAuth = Router();
 oAuth.get('/start/:provider', socialRedirect);
 
 oAuth.get('/done', async (req ,res) => {
-  const { code }: { code?: string } = req.query;
-  if (!code) {
+  const { code, state }: { code?: string, state?: string } = req.query;
+  const parsedState = JSON.parse(state);
+  const snsType = parsedState?.sns_type ?? null;
+  console.log('/done', req.query);
+
+  if (!code || !snsType) {
     return res.sendStatus(400);
   }
+
   try {
-    console.log('/done', code, GOOGLE_ID, GOOGLE_SECRET, redirectUri);
-    const accessToken = await getAccessToken({
-      code,
-      clientId: GOOGLE_ID,
-      clientSecret: GOOGLE_SECRET,
-      redirectUri: `${redirectUri}done`
-    });
+    switch (snsType) {
+      case 'google':
+        const googleAccessToken = await google.getAccessToken({
+          code,
+          clientId: GOOGLE_ID,
+          clientSecret: GOOGLE_SECRET,
+          redirectUri: `${redirectUri}done`
+        });
+    
+        console.log('accessToken', googleAccessToken);
+    
+        const googleProfile = await google.getProfile(googleAccessToken);
 
-    console.log('accessToken', accessToken);
+        console.log('googleProfile', googleProfile);
+        break;
+      case 'facebook':
+        const facebookAccessToken = await facebook.getAccessToken({
+          code,
+          clientId: FACEBOOK_ID,
+          clientSecret: FACEBOOK_SECRET,
+          redirectUri: `${redirectUri}done`
+        });
+    
+        console.log('facebookAccessToken', facebookAccessToken);
 
-    const profile = await getProfile(accessToken);
+        const facebookProfile = await facebook.getProfile(facebookAccessToken);
+
+        console.log('facebookProfile', facebookProfile);
+        break;
+      case 'twitter':
+        break;
+      case 'apple':
+        break;
+      default: break;
+    }
 
     res.redirect('http://localhost:3000');
   } catch (err) {
