@@ -16,9 +16,9 @@ const oAuth = Router();
 /**
  * oAuth Router
  * /start/:provider
- * /done/:provider
+ * /done/
  */
- const socialRedirect = async (req, res) => {
+ const snsStartCallback = async (req, res) => {
   const { provider } = req.params;
   const { next } = req.query;
   const validated = ['facebook', 'google', 'twitter', 'apple'].includes(provider);
@@ -31,9 +31,7 @@ const oAuth = Router();
   res.redirect(loginUrl);
 };
 
-oAuth.get('/start/:provider', socialRedirect);
-
-oAuth.get('/done', async (req ,res) => {
+const snsCompleteCallback = async (req, res) => {
   const { code, state }: { code?: string, state?: string } = req.query;
   const parsedState = JSON.parse(state);
   const snsType = parsedState?.sns_type ?? null;
@@ -85,6 +83,10 @@ oAuth.get('/done', async (req ,res) => {
     console.error('ERROR', err);
     res.sendStatus(500);
   }
-});
+}
+
+oAuth.get('/start/:provider', snsStartCallback);
+
+oAuth.get('/done', snsCompleteCallback);
 
 export default oAuth;
