@@ -1,6 +1,8 @@
 import './env';
 import express from 'express';
+import session from 'express-session';
 import next from 'next';
+import passport from 'passport';
 
 import oAuth from './routes/oauth';
 
@@ -13,7 +15,13 @@ const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
   const server: express.Application = express();
-  
+  server.use(session({ secret: 'keyboard cat', resave: true, saveUninitialized: true }));
+
+  // Initialize Passport and restore authentication state, if any, from the
+  // session.
+  server.use(passport.initialize());
+  server.use(passport.session());
+
   server.use('/oauth', oAuth);
   server.get('*', (req, res) => {
     return handle(req, res);

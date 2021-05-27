@@ -31,7 +31,7 @@ export function generateSnsLoginLink(provider: TSnsProvider, next: string = '/')
       const callbackUri = `${redirectUri}done`;
       
       return `https://www.facebook.com/${FACEBOOK_OAUTH_VERSION}/dialog/oauth?client_id=${FACEBOOK_ID}&redirect_uri=${callbackUri}&state=${state}&scope=email,user_gender,user_birthday`;
-    },
+    }
   };
   
   const generator = generators[provider];

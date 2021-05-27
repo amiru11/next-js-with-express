@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { redirectUri, generateSnsLoginLink } from '../../lib';
 import * as google from '../../lib/google';
 import * as facebook from '../../lib/facebook';
+import twitterPassport from '../../lib/twitter';
 
 const {
   GOOGLE_ID,
@@ -18,24 +19,29 @@ const oAuth = Router();
  * /start/:provider
  * /done/
  */
- const snsStartCallback = async (req, res) => {
+ const snsStartCallback = async (req, res, next) => {
   const { provider } = req.params;
-  const { next } = req.query;
   const validated = ['facebook', 'google', 'twitter', 'apple'].includes(provider);
   if (!validated) {
     res.status = 400;
     return;
   }
-
-  const loginUrl = generateSnsLoginLink(provider, next);
-  res.redirect(loginUrl);
+  if (provider !== 'twitter') {
+    const loginUrl = generateSnsLoginLink(provider, '/');
+    res.redirect(loginUrl);
+  }
+  next();
 };
 
-const snsCompleteCallback = async (req, res) => {
-  const { code, state }: { code?: string, state?: string } = req.query;
+const snsCompleteCallback = async (req, res, next) => {
+  const { code, state, oauth_token }: { code?: string, state?: string, oauth_token?: string } = req.query;
+
+  console.log('/done', req.query);
+
+  if (oauth_token) return next();
+
   const parsedState = JSON.parse(state);
   const snsType = parsedState?.sns_type ?? null;
-  console.log('/done', req.query);
 
   if (!code || !snsType) {
     return res.sendStatus(400);
@@ -85,8 +91,11 @@ const snsCompleteCallback = async (req, res) => {
   }
 }
 
-oAuth.get('/start/:provider', snsStartCallback);
+oAuth.get('/start/:provider', snsStartCallback, twitterPassport.authenticate('twitter'));
 
-oAuth.get('/done', snsCompleteCallback);
+oAuth.get('/done', snsCompleteCallback, twitterPassport.authenticate('twitter', { failureRedirect: '/login' }),
+function(req, res) {
+  res.redirect('/');
+});
 
 export default oAuth;
