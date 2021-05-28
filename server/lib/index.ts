@@ -1,8 +1,17 @@
 import { google } from 'googleapis';
+import axios from 'axios';
 
 export type TSnsProvider = 'google' | 'facebook' | 'twitter' | 'apple';
 
-const { GOOGLE_ID, GOOGLE_SECRET, FACEBOOK_ID, FACEBOOK_OAUTH_VERSION, PROD_HOST } = process.env;
+const {
+  GOOGLE_ID,
+  GOOGLE_SECRET,
+  FACEBOOK_ID,
+  FACEBOOK_OAUTH_VERSION,
+  APPLE_ID,
+  APPLE_REDIRECT_URL,
+  PROD_HOST
+} = process.env;
 
 const redirectPath = `/oauth/`;
 export const redirectUri =
@@ -12,7 +21,7 @@ export const redirectUri =
 
 export function generateSnsLoginLink(provider: TSnsProvider, next: string = '/') {
   const generators = {
-    google(next: string) {
+    google() {
       const callback = `${redirectUri}done`;
       const oauth2Client = new google.auth.OAuth2(GOOGLE_ID, GOOGLE_SECRET, callback);
       const url = oauth2Client.generateAuthUrl({
@@ -26,11 +35,17 @@ export function generateSnsLoginLink(provider: TSnsProvider, next: string = '/')
 
       return url;
     },
-    facebook(next: string) {
+    facebook() {
       const state = JSON.stringify({ sns_type: 'facebook' });
       const callbackUri = `${redirectUri}done`;
       
       return `https://www.facebook.com/${FACEBOOK_OAUTH_VERSION}/dialog/oauth?client_id=${FACEBOOK_ID}&redirect_uri=${callbackUri}&state=${state}&scope=email,user_gender,user_birthday`;
+    },
+    apple() {
+      const state = JSON.stringify({ sns_type: 'apple' });
+      const callbackUri = `${redirectUri}done`;
+
+      return `https://appleid.apple.com/auth/authorize?response_type=code&client_id=${APPLE_ID}&redirect_uri=${callbackUri}&scope=email&state=${state}&response_mode=form_post`;
     }
   };
   

@@ -2,7 +2,7 @@ import passport from 'passport';
 import { Strategy } from 'passport-twitter';
 import { redirectUri } from './index';
 
-const { TWITTER_BASE_URL, TWITTER_OAUTH_VERSION, TWITTER_API_KEY, TWITTER_API_SECRET_KEY } = process.env;
+const { TWITTER_API_KEY, TWITTER_API_SECRET_KEY } = process.env;
 
 // Configure the Twitter strategy for use by Passport.
 //
@@ -20,11 +20,7 @@ function(token, tokenSecret, profile, cb) {
   console.log('TWITTER token', token);
   console.log('TWITTER tokenSecret', tokenSecret);
   console.log('TWITTER profile', profile);
-  // In this example, the user's Twitter profile is supplied as the user
-  // record.  In a production-quality application, the Twitter profile should
-  // be associated with a user record in the application's database, which
-  // allows for account linking and authentication with other identity
-  // providers.
+
   return cb(null, profile);
 }));
 
