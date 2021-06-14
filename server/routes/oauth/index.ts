@@ -2,7 +2,6 @@ import { Router } from 'express';
 import { redirectUri, generateSnsLoginLink } from '../../lib';
 import * as google from '../../lib/google';
 import * as facebook from '../../lib/facebook';
-import twitterPassport from '../../lib/twitter';
 
 const {
   GOOGLE_ID,
@@ -91,11 +90,8 @@ const snsCompleteCallback = async (req, res, next) => {
   }
 }
 
-oAuth.get('/start/:provider', snsStartCallback, twitterPassport.authenticate('twitter'));
+oAuth.get('/start/:provider', snsStartCallback);
 
-oAuth.get('/done', snsCompleteCallback, twitterPassport.authenticate('twitter', { failureRedirect: '/login' }),
-function(req, res) {
-  res.redirect('/');
-});
+oAuth.get('/done', snsCompleteCallback);
 
 export default oAuth;

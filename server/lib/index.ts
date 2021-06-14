@@ -1,5 +1,4 @@
 import { google } from 'googleapis';
-import axios from 'axios';
 
 export type TSnsProvider = 'google' | 'facebook' | 'twitter' | 'apple';
 

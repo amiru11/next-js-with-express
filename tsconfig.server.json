@@ -1,12 +1,11 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "baseUrl": "./server",
     "module": "commonjs",
     "outDir": "dist",
-    "target": "esnext",
-    "isolatedModules": false,
-    "noEmit": false,
-    "baseUrl": "./server"
+    "target": "es5",
+    "noEmit": false
   },
-  "include": ["server/**/*.ts"]
+  "include": ["server", "server/*.d.ts"]
 }
